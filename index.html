@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculateur Remboursement Assurance Santé Multi-Actes</title>
+    <title>Calculateur Remboursement Santé Multi-Actes 2025</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
@@ -47,7 +47,15 @@
             border: 1px solid #ddd;
             transition: border-color 0.2s;
         }
-        .act-input:focus {
+        
+        .act-input.disabled-field {
+            background-color: #f7f7f7;
+            color: #777;
+            cursor: not-allowed;
+            border-color: #ccc;
+        }
+        
+        .act-input:not(.disabled-field):focus {
             border-color: #764ba2;
         }
     </style>
@@ -61,13 +69,19 @@
                 <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
-                Calculateur Multi-Actes Assurance Santé
+                Calculateur Mutuelle (Base SS 2025)
             </h1>
         </div>
     </header>
 
     <main class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
         
+        <!-- Avertissement Nomenclature 2025 -->
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 mb-6 rounded-lg shadow-md">
+            <p class="font-bold">⚠️ Données Assurances Maladie (Estimations 2025)</p>
+            <p class="text-sm">Les BR et Taux de Remboursement Sécu sont basés sur les chiffres au **1er Mai 2025** que vous avez fournis. Ces montants sont indicatifs et non contractuels.</p>
+        </div>
+
         <!-- Formulaire Global & Actes -->
         <div class="glass-effect rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 mb-6">
             
@@ -75,25 +89,41 @@
             <section class="mb-8">
                 <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m-6 2h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
-                    🎯 Paramètres Mutuelle (Garantie Globale)
+                    🎯 Paramètres de Simulation
                 </h2>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    
+                    <!-- Nouveau : Parcours de Soins -->
                     <div class="input-group">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            💊 Part Forfaitaire (Sécu - Globale) (€)
+                            ✅ Statut Parcours de Soins Coordonné
+                        </label>
+                        <select id="parcoursDeSoinsStatus" class="w-full px-4 py-3 border-2 border-green-300 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 transition font-semibold bg-green-50" onchange="calculateAll()">
+                            <option value="PS">Respecté</option>
+                            <option value="HPS">Non Respecté (Hors Parcours)</option>
+                        </select>
+                         <p class="text-xs text-gray-600 mt-2">
+                            Le choix impacte la BR et le Taux de Remboursement Sécu.
+                        </p>
+                    </div>
+
+                    <!-- Part Forfaitaire -->
+                    <div class="input-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            💊 Total Part Forfaitaire/Franchise (€)
                         </label>
                         <input 
                             type="number" 
                             id="partForfaitaire" 
                             step="0.01"
                             class="w-full px-4 py-3 border-2 border-yellow-300 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition font-semibold"
-                            placeholder="2.00" value="0.00"
+                            placeholder="2.00" value="2.00"
                         />
                          <p class="text-xs text-gray-600 mt-2">
-                            Cette franchise est déduite du remboursement final (Mutuelle + Sécu).
+                            Somme totale des participations forfaitaires (€2/acte, €1/boîte) déduite du remboursement total.
                         </p>
                     </div>
                     
@@ -112,7 +142,7 @@
                     </div>
 
                     <!-- Input pour le Pourcentage (Mode PERCENT) -->
-                    <div id="garantiePercentGroup" class="input-group sm:col-span-2">
+                    <div id="garantiePercentGroup" class="input-group">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             % de la BR Couvert (Garantie Mutuelle)
                         </label>
@@ -121,15 +151,15 @@
                             id="garantieMutuelle" 
                             step="10"
                             class="w-full px-4 py-3 border-4 border-blue-400 rounded-lg focus:border-blue-600 focus:ring-4 focus:ring-blue-200 transition font-bold text-xl bg-blue-50"
-                            placeholder="100" value="100"
+                            placeholder="200" value="200"
                         />
                         <p class="text-xs text-gray-600 mt-2">
-                            Ex: 100% = Remboursement du Ticket Modérateur. 200% = Couverture du TM + Dépassement d'honoraires jusqu'à 100% de la BR.
+                            Ex: 200% = Couverture du Ticket Modérateur + Dépassement d'honoraires jusqu'à 100% de la BR.
                         </p>
                     </div>
 
                     <!-- Input pour le Forfait Euro (Mode EURO) -->
-                    <div id="garantieEuroGroup" class="input-group sm:col-span-2 hidden">
+                    <div id="garantieEuroGroup" class="input-group hidden">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             € Forfaitaire Maximum par Acte (Garantie Mutuelle)
                         </label>
@@ -141,7 +171,7 @@
                             placeholder="50.00" value="50.00"
                         />
                         <p class="text-xs text-gray-600 mt-2">
-                            La mutuelle remboursera le Reste à Charge (après Sécu) jusqu'à ce montant, par acte.
+                            La mutuelle rembourse le Reste à Charge (après Sécu) jusqu'à ce montant, par acte.
                         </p>
                     </div>
                 </div>
@@ -268,7 +298,7 @@
             <div id="conseilBox" class="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 rounded-lg p-4 mt-4">
                 <div class="flex items-start gap-2">
                     <svg class="w-5 h-5 text-indigo-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 5 01-7.072 0l-.548-.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                     <div>
                         <p class="font-semibold text-indigo-800 mb-1">💡 Conseil personnalisé :</p>
@@ -281,20 +311,49 @@
 
     <script>
         // Clé de stockage pour localStorage
-        const STORAGE_KEY = 'healthCareDataMultiActes_v2'; // Clé mise à jour pour éviter le conflit avec l'ancienne structure
-        
+        const STORAGE_KEY = 'healthCareDataMultiActes_v4_ps'; 
+
         let actIdCounter = 0;
         const actesContainer = document.getElementById('actesContainer');
         const addActButton = document.getElementById('addActButton');
         const globalInputs = {
             partForfaitaire: document.getElementById('partForfaitaire'),
+            parcoursDeSoinsStatus: document.getElementById('parcoursDeSoinsStatus'), // Nouveau
             garantieType: document.getElementById('garantieType'),
-            garantieMutuelle: document.getElementById('garantieMutuelle'), // Percent input
-            garantieEuro: document.getElementById('garantieEuro') // Euro input
+            garantieMutuelle: document.getElementById('garantieMutuelle'), 
+            garantieEuro: document.getElementById('garantieEuro') 
         };
         const garantiePercentGroup = document.getElementById('garantiePercentGroup');
         const garantieEuroGroup = document.getElementById('garantieEuroGroup');
         const resultsContainer = document.getElementById('resultsContainer');
+
+        // --- Base de Données des Actes Médicaux 2025 (Basé sur les données de l'utilisateur) ---
+        // Les valeurs BR et RO% dépendent du Parcours de Soins (PS) ou Hors Parcours de Soins (HPS).
+        const actDB_Full = [
+            { 
+                code: 'LIBRE', name: 'Acte Manuel / Hors Nomenclature (BR/RO à saisir)', 
+                br_ps: 0.00, roPct_ps: 0, 
+                br_hps: 0.00, roPct_hps: 0 
+            },
+            // --- Médecins (Consultations) ---
+            { code: 'CS-G1', name: 'Généraliste S1/S2 OPTAM', br_ps: 30.00, roPct_ps: 70, br_hps: 30.00, roPct_hps: 30 },
+            { code: 'CS-G2', name: 'Généraliste S2 Honoraires Libres', br_ps: 23.00, roPct_ps: 70, br_hps: 23.00, roPct_hps: 30 },
+            { code: 'CS-S1', name: 'Spécialiste S1/S2 OPTAM', br_ps: 31.50, roPct_ps: 70, br_hps: 26.50, roPct_hps: 30 }, // BR change si HPS
+            { code: 'CS-S2', name: 'Spécialiste S2 Honoraires Libres', br_ps: 23.00, roPct_ps: 70, br_hps: 23.00, roPct_hps: 30 },
+            // --- Médecins (Spécialités Spécifiques) ---
+            { code: 'CS-CARDIO-S1', name: 'Cardiologue S1/S2 OPTAM', br_ps: 52.50, roPct_ps: 70, br_hps: 47.73, roPct_hps: 30 }, 
+            { code: 'CS-CARDIO-S2', name: 'Cardiologue S2 Honoraires Libres', br_ps: 47.73, roPct_ps: 70, br_hps: 47.73, roPct_hps: 30 },
+            { code: 'CS-PSY-S1', name: 'Psychiatre, Neuro, Neuropsy S1/S2 OPTAM', br_ps: 55.00, roPct_ps: 70, br_hps: 42.50, roPct_hps: 30 },
+            { code: 'CS-PSY-S2', name: 'Psychiatre, Neuro, Neuropsy S2 Honoraires Libres', br_ps: 42.50, roPct_ps: 70, br_hps: 42.50, roPct_hps: 30 },
+            // --- Dentaire (BR Fixe) ---
+            { code: 'DENT-COUR', name: 'Couronne Dentaire (Base moyenne)', br_ps: 113.75, roPct_ps: 60, br_hps: 113.75, roPct_hps: 60 },
+            { code: 'DENT-BRIDGE', name: 'Bridge 3 éléments', br_ps: 279.50, roPct_ps: 60, br_hps: 279.50, roPct_hps: 60 },
+            { code: 'DENT-ORTHO', name: 'Orthodontie par semestre', br_ps: 193.50, roPct_ps: 100, br_hps: 193.50, roPct_hps: 100 }, // RO 100%
+            // --- Auxiliaires / Paramédical (BR symbolique, Taux 60%) ---
+            { code: 'KINE-INFIRMIER', name: 'Auxiliaires Médicaux (Kiné/Infirmier) - BR symbolique', br_ps: 20.00, roPct_ps: 60, br_hps: 20.00, roPct_hps: 60 }, 
+            // --- Hospitalisation (Forfait Journalier - BR=0) ---
+            { code: 'FJ', name: 'Forfait Journalier Hospitalier (BR=0, Remb. 0)', br_ps: 0.00, roPct_ps: 0, br_hps: 0.00, roPct_hps: 0 }
+        ];
 
         // Helper function for formatting currency
         const currencyFormatter = new Intl.NumberFormat('fr-FR', {
@@ -330,6 +389,7 @@
             const data = {
                 global: {
                     partForfaitaire: globalInputs.partForfaitaire.value,
+                    parcoursDeSoinsStatus: globalInputs.parcoursDeSoinsStatus.value, // Sauvegarde du statut PS
                     garantieType: globalInputs.garantieType.value,
                     garantieMutuelle: globalInputs.garantieMutuelle.value,
                     garantieEuro: globalInputs.garantieEuro.value,
@@ -340,11 +400,15 @@
 
             const actElements = actesContainer.querySelectorAll('.act-item');
             actElements.forEach(actElement => {
+                const actCode = actElement.querySelector('.act-code').value;
+                
                 data.acts.push({
                     id: parseInt(actElement.dataset.id),
                     expense: actElement.querySelector('.act-expense').value,
-                    br: actElement.querySelector('.act-br').value,
-                    ro_pct: actElement.querySelector('.act-ro-pct').value
+                    actCode: actCode, 
+                    // Pour le mode manuel, on sauvegarde les valeurs
+                    manualBr: actElement.querySelector('.act-br').value,
+                    manualRoPct: actElement.querySelector('.act-ro-pct').value,
                 });
             });
 
@@ -367,9 +431,10 @@
                     dataLoaded = true;
 
                     // 1. Charger les données globales
-                    globalInputs.partForfaitaire.value = data.global.partForfaitaire || '0.00';
+                    globalInputs.partForfaitaire.value = data.global.partForfaitaire || '2.00';
+                    globalInputs.parcoursDeSoinsStatus.value = data.global.parcoursDeSoinsStatus || 'PS'; // Nouveau
                     globalInputs.garantieType.value = data.global.garantieType || 'PERCENT';
-                    globalInputs.garantieMutuelle.value = data.global.garantieMutuelle || '100';
+                    globalInputs.garantieMutuelle.value = data.global.garantieMutuelle || '200';
                     globalInputs.garantieEuro.value = data.global.garantieEuro || '50.00';
 
                     // 2. Charger le compteur d'ID
@@ -384,27 +449,25 @@
                 }
             } catch (e) {
                 console.error("Erreur lors du chargement des données de localStorage:", e);
-                // Si erreur, on continue pour initialiser l'app vide
             }
             
             // 4. Initialisation par défaut si rien n'a été chargé ou si la liste d'actes est vide
             if (!dataLoaded || actesContainer.children.length === 0) {
-                 // Initialisation avec des valeurs d'exemple si pas de données stockées
                 globalInputs.garantieMutuelle.value = '200';
                 globalInputs.partForfaitaire.value = '2.00';
-                addAct(true); // Ajoute un acte par défaut
-                const firstActInputs = actesContainer.querySelector('.act-item[data-id="1"]');
-                if(firstActInputs) {
-                    firstActInputs.querySelector('.act-expense').value = '150.00';
-                    firstActInputs.querySelector('.act-br').value = '70.00';
-                    firstActInputs.querySelector('.act-ro-pct').value = '70';
+                globalInputs.parcoursDeSoinsStatus.value = 'PS';
+                addAct(true); 
+                const firstAct = actesContainer.querySelector('.act-item[data-id="1"]');
+                if(firstAct) {
+                    firstAct.querySelector('.act-code').value = 'CS-G1'; 
+                    firstAct.querySelector('.act-expense').value = '35.00';
+                    // Re-appelle pour appliquer le statut PS par défaut
+                    updateActDetails(1, 'CS-G1'); 
                 }
             }
             
-            // 5. Afficher le bon champ d'input
+            // 5. Afficher le bon champ d'input et lancer le premier calcul
             toggleGarantieInput(); 
-            
-            // 6. Lancer le premier calcul après le chargement/l'initialisation
             calculateAll();
             
             // Animation d'entrée après le chargement
@@ -420,42 +483,120 @@
         // --- Act Management Functions ---
 
         /**
+         * Récupère la BR et le RO% appropriés en fonction du statut du Parcours de Soins.
+         */
+        function getActTariff(actCode) {
+            const status = globalInputs.parcoursDeSoinsStatus.value; // 'PS' ou 'HPS'
+            const actData = actDB_Full.find(act => act.code === actCode);
+            
+            if (!actData) {
+                return { br: 0.00, roPct: 0, note: "Act Not Found" };
+            }
+
+            if (status === 'PS') {
+                return { br: actData.br_ps, roPct: actData.roPct_ps, note: "Parcours de Soins Respecté" };
+            } else { // status === 'HPS'
+                return { br: actData.br_hps, roPct: actData.roPct_hps, note: "Parcours de Soins Non Respecté" };
+            }
+        }
+
+        /**
+         * Met à jour les champs BR et RO% basés sur le code de l'acte et le statut PS/HPS sélectionné.
+         */
+        function updateActDetails(id, actCode) {
+            const actElement = document.querySelector(`.act-item[data-id="${id}"]`);
+            if (!actElement) return;
+
+            const brInput = actElement.querySelector('.act-br');
+            const roPctInput = actElement.querySelector('.act-ro-pct');
+            const isManual = actCode === 'LIBRE';
+            const tarif = getActTariff(actCode);
+            
+            // 1. Gestion de la désactivation (lecture seule)
+            brInput.disabled = !isManual;
+            roPctInput.disabled = !isManual;
+
+            if (isManual) {
+                // Mode manuel : autoriser la saisie
+                brInput.classList.remove('disabled-field');
+                roPctInput.classList.remove('disabled-field');
+                // S'assurer qu'ils ont des valeurs (chargées ou par défaut)
+                if (brInput.value === '') brInput.value = '0.00';
+                if (roPctInput.value === '') roPctInput.value = '0';
+            } else {
+                // Mode DB : lecture seule
+                brInput.value = tarif.br.toFixed(2);
+                roPctInput.value = tarif.roPct;
+                brInput.classList.add('disabled-field');
+                roPctInput.classList.add('disabled-field');
+            }
+
+            calculateAll();
+        }
+
+        /**
          * Crée l'élément HTML pour un acte et l'ajoute au conteneur.
          */
         function createActUI(id, data = {}) {
             const div = document.createElement('div');
             div.className = 'act-item bg-white border border-gray-200 rounded-lg p-4 shadow-sm relative';
             div.dataset.id = id;
+
+            // Construction des options du sélecteur
+            const optionsHtml = actDB_Full.map(act => {
+                const tarif = getActTariff(act.code);
+                const brDisplay = act.code !== 'LIBRE' ? `(BR: ${formatCurrency(tarif.br)})` : '';
+                return `<option value="${act.code}" ${data.actCode === act.code ? 'selected' : ''}>${act.name} ${brDisplay}</option>`;
+            }).join('');
+            
+            // Valeurs par défaut pour le mode manuel si chargement
+            const manualBrValue = data.manualBr !== undefined ? data.manualBr : '0.00';
+            const manualRoPctValue = data.manualRoPct !== undefined ? data.manualRoPct : '0';
+
             div.innerHTML = `
                 <button type="button" class="remove-act absolute top-2 right-2 text-gray-400 hover:text-red-600 transition" title="Supprimer cet acte">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
                 <h3 class="text-sm font-bold text-indigo-700 mb-3">Acte #${id}</h3>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="col-span-1 sm:col-span-2">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">🔍 Choix de l'Acte (Nomenclature)</label>
+                        <select class="act-input act-code bg-indigo-50" data-input="actCode">
+                            ${optionsHtml}
+                        </select>
+                    </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">💰 Dépense Totale (€)</label>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">💰 Dépense Totale Facturée (€)</label>
                         <input type="number" step="0.01" class="act-input act-expense" data-input="expense" placeholder="50.00" value="${data.expense || '0.00'}">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">📋 Base Remboursement (BR) (€)</label>
-                        <input type="number" step="0.01" class="act-input act-br" data-input="br" placeholder="25.00" value="${data.br || '0.00'}">
+                        <input type="number" step="0.01" class="act-input act-br disabled-field" data-input="br" placeholder="30.00" value="${manualBrValue}" disabled>
                     </div>
-                    <div class="col-span-2">
+                    <div class="col-span-1">
                         <label class="block text-xs font-medium text-gray-700 mb-1">📊 Taux Remboursement Sécu (RO%)</label>
-                        <input type="number" step="1" class="act-input act-ro-pct" data-input="ro_pct" placeholder="70" value="${data.ro_pct || '70'}">
+                        <input type="number" step="1" class="act-input act-ro-pct disabled-field" data-input="ro_pct" placeholder="70" value="${manualRoPctValue}" disabled>
                     </div>
                 </div>
             `;
             
             // Add listeners to new inputs
-            div.querySelectorAll('.act-input').forEach(input => {
-                input.addEventListener('input', calculateAll);
-            });
+            div.querySelector('.act-expense').addEventListener('input', calculateAll);
+            div.querySelector('.act-br').addEventListener('input', calculateAll); 
+            div.querySelector('.act-ro-pct').addEventListener('input', calculateAll); 
+            
+            // Listener pour la sélection de l'acte
+            div.querySelector('.act-code').addEventListener('change', (e) => updateActDetails(id, e.target.value));
             
             // Add remove listener
             div.querySelector('.remove-act').addEventListener('click', () => removeAct(id));
 
             actesContainer.appendChild(div);
+            
+            // Mise à jour initiale des champs BR/RO%
+            const initialActCode = div.querySelector('.act-code').value;
+            updateActDetails(id, initialActCode);
+
             return div;
         }
 
@@ -468,11 +609,10 @@
             
             if (!initial) {
                 gsap.fromTo(newAct, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' });
-                // Focus sur le premier champ pour l'utilisateur
                 newAct.querySelector('.act-expense').focus();
             }
 
-            calculateAll(); // Sauvegarde et recalcule
+            calculateAll();
         }
 
         /**
@@ -487,7 +627,7 @@
                     duration: 0.3, 
                     onComplete: () => {
                         actElement.remove();
-                        calculateAll(); // Sauvegarde et recalcule
+                        calculateAll();
                     }
                 });
             }
@@ -498,6 +638,7 @@
         function calculateAll() {
             // Paramètres globaux
             const globalForfait = parseFloat(globalInputs.partForfaitaire.value) || 0;
+            const parcoursStatus = globalInputs.parcoursDeSoinsStatus.value; // 'PS' ou 'HPS'
             const garantieType = globalInputs.garantieType.value;
             const globalGarantiePct = parseFloat(globalInputs.garantieMutuelle.value) || 0;
             const globalGarantieEuro = parseFloat(globalInputs.garantieEuro.value) || 0;
@@ -515,22 +656,41 @@
             actElements.forEach(actElement => {
                 // Récupération des valeurs numériques des actes
                 const expense = parseFloat(actElement.querySelector('.act-expense').value) || 0;
-                const br = parseFloat(actElement.querySelector('.act-br').value) || 0;
-                const roPct = parseFloat(actElement.querySelector('.act-ro-pct').value) || 0;
-                const id = parseInt(actElement.dataset.id);
+                
+                // 1. Détermination des BR et RO%
+                const actCode = actElement.querySelector('.act-code').value;
+                let br = 0;
+                let roPct = 0;
 
-                // 1. Calcul Remboursement Sécu (RO)
+                if (actCode === 'LIBRE') {
+                    // Mode manuel : prend les valeurs saisies par l'utilisateur
+                    br = parseFloat(actElement.querySelector('.act-br').value) || 0;
+                    roPct = parseFloat(actElement.querySelector('.act-ro-pct').value) || 0;
+                } else {
+                    // Mode DB : trouve les valeurs basées sur le statut du parcours de soins
+                    const tarif = getActTariff(actCode);
+                    br = tarif.br;
+                    roPct = tarif.roPct;
+                    
+                    // Mise à jour des inputs read-only (nécessaire si on change le statut global PS/HPS)
+                    actElement.querySelector('.act-br').value = br.toFixed(2);
+                    actElement.querySelector('.act-ro-pct').value = roPct;
+                }
+                
+                const id = parseInt(actElement.dataset.id);
+                const actName = actDB_Full.find(act => act.code === actCode)?.name || "Acte Manuel";
+
+
+                // 2. Calcul Remboursement Sécu (RO)
                 const remboursementSecu = br * (roPct / 100);
                 
-                // 2. Coût restant après Sécu (Ticket Modérateur + Dépassement d'Honoraires)
+                // 3. Coût restant après Sécu (Ticket Modérateur + Dépassement d'Honoraires)
                 const remainingCost = Math.max(0, expense - remboursementSecu);
                 
                 let remboursementComplementaire = 0;
 
-                // 3. Calcul Remboursement Mutuelle (RC) selon le mode de garantie
+                // 4. Calcul Remboursement Mutuelle (RC)
                 if (garantieType === 'PERCENT') {
-                    // Mode Pourcentage de la BR (Ex: 200%)
-                    
                     // Plafond de remboursement total (Sécu + Mutuelle)
                     const plafondMutuelleTotal = br * (globalGarantiePct / 100);
                     
@@ -542,15 +702,13 @@
                     
                 } else if (garantieType === 'EURO') {
                     // Mode Forfait Euro (Ex: 50.00 €)
-                    
-                    // La mutuelle rembourse le minimum entre le coût restant (après Sécu) et le forfait fixe.
                     remboursementComplementaire = Math.min(remainingCost, globalGarantieEuro);
                 }
 
-                // 4. Reste à Charge (avant forfait global)
+                // 5. Reste à Charge (avant forfait global)
                 const resteAChargeAct = Math.max(0, expense - remboursementSecu - remboursementComplementaire);
                 
-                // 5. Agrégation des totaux
+                // 6. Agrégation des totaux
                 totalDepense += expense;
                 totalRemboursementSecu += remboursementSecu;
                 totalRemboursementComplementaire += remboursementComplementaire;
@@ -558,6 +716,7 @@
 
                 actsSummary.push({
                     id: id,
+                    name: actName,
                     expense: expense,
                     br: br,
                     ro: remboursementSecu,
@@ -570,9 +729,14 @@
             const resteAChargeFinal = Math.max(0, totalResteAChargePreForfait + globalForfait);
 
             // Calcul des pourcentages pour les barres (basé sur Dépense Totale)
+            const totalRembourse = totalRemboursementSecu + totalRemboursementComplementaire;
             const pctSecu = totalDepense > 0 ? (totalRemboursementSecu / totalDepense) * 100 : 0;
             const pctComplementaire = totalDepense > 0 ? (totalRemboursementComplementaire / totalDepense) * 100 : 0;
             const pctReste = totalDepense > 0 ? (resteAChargeFinal / totalDepense) * 100 : 0;
+
+            const totalPct = pctSecu + pctComplementaire + pctReste;
+            const scaleFactor = totalPct > 100 ? 100 / totalPct : 1;
+
 
             // Mise à jour de l'UI
             updateResults({
@@ -581,11 +745,12 @@
                 totalRemboursementComplementaire,
                 resteAChargeFinal,
                 globalForfait,
-                pctSecu,
-                pctComplementaire,
-                pctReste,
+                pctSecu: pctSecu * scaleFactor,
+                pctComplementaire: pctComplementaire * scaleFactor,
+                pctReste: pctReste * scaleFactor,
                 actsSummary,
-                garantieType
+                garantieType,
+                parcoursStatus
             });
             
             // Sauvegarde des données après le calcul
@@ -614,7 +779,7 @@
             document.getElementById('rembourseComplementaire').textContent = formatCurrency(results.totalRemboursementComplementaire);
             document.getElementById('rembourseSecu').textContent = formatCurrency(results.totalRemboursementSecu);
             document.getElementById('resteACharge').textContent = formatCurrency(results.resteAChargeFinal);
-            document.getElementById('partForfaitaireAffiche').textContent = `Dont ${formatCurrency(results.globalForfait)} de Part Forfaitaire.`;
+            document.getElementById('partForfaitaireAffiche').textContent = `Dont ${formatCurrency(results.globalForfait)} de Part Forfaitaire (globale).`;
 
             // Mise à jour des barres de progression
             document.getElementById('pctSecu').textContent = results.pctSecu.toFixed(1) + '%';
@@ -629,9 +794,11 @@
             let conseil = "Ajoutez au moins un acte avec une dépense > 0 pour obtenir un conseil.";
             if (results.totalDepense > 0) {
                 const ratioRAC = results.resteAChargeFinal / results.totalDepense;
-                let garantieDescription = results.garantieType === 'EURO' ? "votre forfait en Euros" : "votre pourcentage BR";
+                const garantieDescription = results.garantieType === 'EURO' ? "votre forfait en Euros" : "votre pourcentage BR";
 
-                if (ratioRAC > 0.5) {
+                if (results.parcoursStatus === 'HPS' && ratioRAC > 0.4) {
+                    conseil = `🚨 ATTENTION : Vous êtes en **Parcours de Soins Non Respecté**. Votre remboursement Sécu est seulement de 30% (vs 70%). Une meilleure couverture Mutuelle est critique, ou essayez de désigner un médecin traitant.`;
+                } else if (ratioRAC > 0.5) {
                     conseil = `⚠️ Votre reste à charge total est très élevé (>50%). Revoyez les paramètres de ${garantieDescription} car ils semblent insuffisants par rapport aux dépenses et BR des actes saisis.`;
                 } else if (ratioRAC > 0.3) {
                     conseil = `📊 Votre reste à charge est notable (>30%). Si ce type de soin est fréquent, une meilleure garantie mutuelle (ou un forfait supérieur si vous utilisez le mode Euro) pourrait être envisagée.`;
@@ -652,7 +819,7 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-200">
                             <tr>
-                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Acte</th>
+                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Acte (BR)</th>
                                 <th class="px-2 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Dépense</th>
                                 <th class="px-2 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">RO (Sécu)</th>
                                 <th class="px-2 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">RC (Mutuelle)</th>
@@ -664,7 +831,7 @@
                 results.actsSummary.forEach(act => {
                     html += `
                         <tr>
-                            <td class="px-2 py-2 whitespace-nowrap text-sm font-medium text-gray-900">#${act.id} <span class="text-xs text-gray-500 block">(BR: ${formatCurrency(act.br)})</span></td>
+                            <td class="px-2 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${act.name} <span class="text-xs text-gray-500 block">(BR: ${formatCurrency(act.br)})</span></td>
                             <td class="px-2 py-2 whitespace-nowrap text-sm font-bold">${formatCurrency(act.expense)}</td>
                             <td class="px-2 py-2 whitespace-nowrap text-sm text-green-700">${formatCurrency(act.ro)}</td>
                             <td class="px-2 py-2 whitespace-nowrap text-sm text-blue-700">${formatCurrency(act.rc)}</td>
@@ -694,9 +861,20 @@
             input.addEventListener('input', calculateAll);
         });
         
+        // Listener spécifique pour le changement de statut PS/HPS
+        globalInputs.parcoursDeSoinsStatus.addEventListener('change', () => {
+            // Force la mise à jour des BR/RO% de tous les actes pour refléter le changement de statut
+            const actElements = actesContainer.querySelectorAll('.act-item');
+            actElements.forEach(actElement => {
+                const id = parseInt(actElement.dataset.id);
+                const actCode = actElement.querySelector('.act-code').value;
+                updateActDetails(id, actCode); 
+            });
+            calculateAll();
+        });
+
         // Listener for the new guarantee type selection
         globalInputs.garantieType.addEventListener('change', toggleGarantieInput);
-
 
         // Listener for adding new acts
         addActButton.addEventListener('click', () => addAct());
